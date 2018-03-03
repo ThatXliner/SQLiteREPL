@@ -7,11 +7,8 @@ import tabulate
 
 parser: ArgumentParser = ArgumentParser()
 
-parser.add_argument('-d',
-                    '--database',
-                    '--db',
-                    dest='database',
-                    metavar='PATH',
+parser.add_argument('database',
+                    help='path to database',
                     default='~/.sqlite')
 
 args: Namespace = parser.parse_args()
@@ -35,7 +32,7 @@ def main():
     # used for fish-like history completion
     history: InMemoryHistory = InMemoryHistory()
 
-    while user_input != 'exit':
+    while True:
 
         # offer suggestions from history from history
         try:
@@ -49,6 +46,11 @@ def main():
 
         except (EOFError, KeyboardInterrupt) as e:
             break
+
+        if user_input.lower() == '.quit' or user_input.lower() == 'exit':
+            break
+        elif user_input.lower() == '.tables':
+            user_input = 'select name from sqlite_master where type = "table";'
 
         try:
             with connection:
