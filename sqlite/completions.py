@@ -94,7 +94,7 @@ sql_keywords: Set[str] = {
     'NATURAL',
     'NO',
     'NOT',
-    'NOTNULL',
+    'NOT NULL',
     'OF',
     'OFFSET',
     'ON CONFLICT',

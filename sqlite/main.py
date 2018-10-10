@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-def main() -> None:
+def main():
 
     # Standard Library
     from os.path import expanduser
@@ -123,12 +123,13 @@ def main() -> None:
 
     args: Namespace = parser.parse_args()
 
+    # bottom_toolbar=((lambda: HTML("SQLite3 REPL | " + " | ".join([i for i in [
+    #     f"<b><style bg=\"ansiblue\">{i}</style></b> {eval('args.' + i, globals=globals(), locals=locals())}" for i
+    #     in dir(args) if
+    #     i[0] != '_'] if not i.endswith("True") and not i.endswith("False") and not i.startswith(
+    #     "prompt")]))) if args.infobar else None),
     prompt_session: PromptSession = PromptSession(
         message=args.prompt,
-        bottom_toolbar=((lambda: HTML("SQLite3 REPL | " + " | ".join([i for i in [
-            f"<b><style bg=\"ansiblue\">{i}</style></b> {eval('args.' + i, globals(), locals())}" for i in dir(args) if
-            i[0] != '_'] if not i.endswith("True") and not i.endswith("False") and not i.startswith(
-            "prompt")]))) if args.infobar else None),
         history=ThreadedHistory(FileHistory(expanduser(args.history))),
         auto_suggest=ThreadedAutoSuggest(AutoSuggestFromHistory()),
         include_default_pygments_style=False,
@@ -141,7 +142,7 @@ def main() -> None:
         enable_open_in_editor=args.editor,
     )
 
-# used for fish-like history completion
+    # used for fish-like history completion
     while True:
 
         try:
