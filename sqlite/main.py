@@ -35,7 +35,7 @@ parser.add_argument(
     'database',
     help='path to database',
     nargs='?',
-    default='~/.sqlite')
+    default='./db.sqlite3')
 
 parser.add_argument(
     '-H',

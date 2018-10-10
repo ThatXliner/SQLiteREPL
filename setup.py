@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 
 """
-SQLite Clinet written in python3
+SQLite REPL written in python3
 """
 
+# Standard Library
 # Always prefer setuptools over distutils
-import re
-import sys
 # To use a consistent encoding
 from codecs import open
-from os import path
+from os.path import dirname, abspath, join
 
+# 3rd Party
 from setuptools import find_packages, setup
 
-here = path.abspath(path.dirname(__file__))
+here = abspath(dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open(join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-
     name='sqlite',
 
     # Versions should comply with PEP440.  For a discussion on single-sourcing
