@@ -124,6 +124,11 @@ def main():
     args: Namespace = parser.parse_args()
 
     prompt_session: PromptSession = PromptSession(
+        bottom_toolbar=((lambda: HTML("SQLite3 REPL | " + " | ".join([i for i in [
+            f"<b><style bg=\"ansiblue\">{i}</style></b> {vars(args)[i]}" for i in dir(args) if i[0] != '_'] if
+                                                                      not i.endswith("True") and not i.endswith(
+                                                                          "False") and not i.startswith(
+                                                                          "prompt")]))) if args.infobar else None),
         message=args.prompt,
         bottom_toolbar=((lambda: HTML("SQLite3 REPL | " + " | ".join([i for i in [
             f"<b><style bg=\"ansiblue\">{i}</style></b> {eval('args.' + i, globals=globals(), locals=locals())}" for i
