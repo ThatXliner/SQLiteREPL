@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
 def main():
 
     # Standard Library
@@ -165,7 +164,3 @@ def main():
 
         except (EOFError, KeyboardInterrupt) as e:
             break
-
-
-if __name__ != "__main__":
-    main()

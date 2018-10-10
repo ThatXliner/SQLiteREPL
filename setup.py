@@ -13,55 +13,50 @@ from os.path import dirname, abspath, join
 # 3rd Party
 from setuptools import find_packages, setup
 
-here = abspath(dirname(__file__))
-
 # Get the long description from the README file
-with open(join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = f.read()
+with open(join(abspath(dirname(__file__)), 'README.rst'), encoding='utf-8') as readme:
+    setup(name='sqlite',
 
-setup(
-    name='sqlite',
+          # Versions should comply with PEP440.  For a discussion on single-sourcing
+          # the version across setup.py and the project code, see
+          # https://packaging.python.org/en/latest/single_source_version.html
+          version='0.2.0',
 
-    # Versions should comply with PEP440.  For a discussion on single-sourcing
-    # the version across setup.py and the project code, see
-    # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.2.0',
+          description='SQLite REPL written in python3',
 
-    description='SQLite REPL written in python3',
+          long_description=readme.read(),
 
-    long_description=long_description,
+          # The project's main homepage.
+          url='https://github.com/nl253/SQLiteREPL',
 
-    # The project's main homepage.
-    url='https://github.com/nl253/SQLiteREPL',
+          # Author details
+          author='Norbert Logiewa',
 
-    # Author details
-    author='Norbert Logiewa',
+          author_email='norbertlogiewa96@gmail.com',
 
-    author_email='norbertlogiewa96@gmail.com',
+          # Choose your license
+          license='MIT',
 
-    # Choose your license
-    license='MIT',
+          classifiers=[
+              'Development Status :: 3 - Alpha',
+              'Intended Audience :: Developers',
+              'Topic :: Database :: Front-Ends',
+              'License :: OSI Approved :: MIT License',
+              'Programming Language :: Python :: 3.6',
+              'Programming Language :: Python :: 3.7',
+          ],
 
-    classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Developers',
-        'Topic :: Database :: Front-Ends',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-    ],
+          keywords='database sqlite3 sqlite REPL SQLite prompt-toolkit prompt_toolkit',
 
-    keywords='database sqlite3 sqlite REPL SQLite prompt-toolkit prompt_toolkit',
+          packages=find_packages(),
 
-    packages=find_packages(),
+          # List run-time dependencies here.  These will be installed by pip when
+          # your project is installed. For an analysis of "install_requires" vs pip's
+          # requirements files see:
+          # https://packaging.python.org/en/latest/requirements.html
 
-    # List run-time dependencies here.  These will be installed by pip when
-    # your project is installed. For an analysis of "install_requires" vs pip's
-    # requirements files see:
-    # https://packaging.python.org/en/latest/requirements.html
+          install_requires=['prompt_toolkit>=2.0', 'tabulate>=0.8.1', 'pygments>=2.2.0'],
 
-    install_requires=['prompt_toolkit>=2.0', 'tabulate>=0.8.1', 'pygments>=2.2.0'],
-
-    entry_points={
-        'console_scripts': ['sqlite = sqlite.main:main']
-    })
+          entry_points={
+              'console_scripts': ['sqlite = sqlite.main:main']
+          })
