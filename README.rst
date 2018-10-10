@@ -68,10 +68,10 @@ Dependencies
 ------------
 - `prompt-toolkit <https://github.com/jonathanslenders/python-prompt-toolkit>`__
 - `tabulate`__
-- python3.6
+- Python >= 3.7
 
 Related
 -------
 
-- <https://github.com/dbcli/mycli>
+- https://github.com/dbcli/mycli
 
