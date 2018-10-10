@@ -1,5 +1,5 @@
 #################################
-SQLite Clinet written in python3
+SQLite Client written in python3
 #################################
 
 Good completion
@@ -21,15 +21,40 @@ Good completion
 
 .. code-block:: sh
 
-	usage: sqlite [-h] [-d PATH]
+        usage: SQLiteREPL [-h] [-H [PATH]] [-m] [--no-history-search]
+                        [--no-complete-while-typing] [--no-infobar] [--no-editor]
+                        [-t STYLE] [-s [STYLE]] [-p [STRING]]
+                        [database]
 
-	optional arguments:
-	-h, --help            show this help message and exit
-	-d PATH, --database PATH, --db PATH
+        A dead simple REPL for SQLite
+
+        positional arguments:
+        database              path to database
+
+        optional arguments:
+        -h, --help            show this help message and exit
+        -H [PATH], --history [PATH]
+                                path to history file
+        -m, --multiline       enable multiline mode (useful for creating tables)
+        --no-history-search   disable history search
+        --no-complete-while-typing
+                                disable completion while typing
+        --no-infobar          disable info bar at the bottom of the screen
+        --no-editor           disable opening in $EDITOR
+        -t STYLE, --tablestyle STYLE
+                                set table style to <STYLE> (hint: try "orgtbl", "pipe"
+                                or "simple"
+        -s [STYLE], --style [STYLE]
+                                pygments style (see
+                                http://pygments.org/docs/styles/#builtin-styles)
+        -p [STRING], --prompt [STRING]
+                                prompt string
+
+        bye!
 
 
 .. note::
-	unless you specify the database location with `--database`, it will
+	unless you specify the database location with `database`, it will
 	be dropped in ~/.sqlite
 
 
