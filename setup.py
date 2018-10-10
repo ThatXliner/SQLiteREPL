@@ -20,7 +20,7 @@ with open(join(abspath(dirname(__file__)), 'README.rst'), encoding='utf-8') as r
           # Versions should comply with PEP440.  For a discussion on single-sourcing
           # the version across setup.py and the project code, see
           # https://packaging.python.org/en/latest/single_source_version.html
-          version='0.2.0',
+          version='1.0.0',
 
           description='SQLite REPL written in python3',
 
@@ -38,7 +38,6 @@ with open(join(abspath(dirname(__file__)), 'README.rst'), encoding='utf-8') as r
           license='MIT',
 
           classifiers=[
-              'Development Status :: 3 - Alpha',
               'Intended Audience :: Developers',
               'Topic :: Database :: Front-Ends',
               'License :: OSI Approved :: MIT License',

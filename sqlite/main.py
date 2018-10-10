@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 def main():
-
     # Standard Library
     from os.path import expanduser
     import sqlite3
