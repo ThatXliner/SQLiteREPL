@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from prompt_toolkit import HTML
+
 
 def main():
     # Standard Library
@@ -8,7 +10,7 @@ def main():
     from argparse import ArgumentParser, Namespace
 
     # 3rd Party
-    from prompt_toolkit import PromptSession, HTML
+    from prompt_toolkit import PromptSession
     from prompt_toolkit.auto_suggest import AutoSuggestFromHistory, ThreadedAutoSuggest
     from prompt_toolkit.completion import ThreadedCompleter
     from prompt_toolkit.history import ThreadedHistory, FileHistory
@@ -121,13 +123,13 @@ def main():
 
     args: Namespace = parser.parse_args()
 
-    # bottom_toolbar=((lambda: HTML("SQLite3 REPL | " + " | ".join([i for i in [
-    #     f"<b><style bg=\"ansiblue\">{i}</style></b> {eval('args.' + i, globals=globals(), locals=locals())}" for i
-    #     in dir(args) if
-    #     i[0] != '_'] if not i.endswith("True") and not i.endswith("False") and not i.startswith(
-    #     "prompt")]))) if args.infobar else None),
     prompt_session: PromptSession = PromptSession(
         message=args.prompt,
+        bottom_toolbar=((lambda: HTML("SQLite3 REPL | " + " | ".join([i for i in [
+            f"<b><style bg=\"ansiblue\">{i}</style></b> {eval('args.' + i, globals=globals(), locals=locals())}" for i
+            in dir(args) if
+            i[0] != '_'] if not i.endswith("True") and not i.endswith("False") and not i.startswith(
+            "prompt")]))) if args.infobar else None),
         history=ThreadedHistory(FileHistory(expanduser(args.history))),
         auto_suggest=ThreadedAutoSuggest(AutoSuggestFromHistory()),
         include_default_pygments_style=False,
