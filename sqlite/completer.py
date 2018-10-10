@@ -7,7 +7,7 @@ from prompt_toolkit.completion import Completer, CompleteEvent, Completion
 from prompt_toolkit.document import Document
 
 # Relative Imports
-from completions import sql_completions
+from .completions import sql_completions
 
 
 class SQLiteCompleter(Completer):

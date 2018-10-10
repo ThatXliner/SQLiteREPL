@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-if __name__ != "__main__":
-    from sys import exit, stderr
-
-    print('must be run as a script', file=stderr)
-    exit(1)
+# if __name__ != "__main__":
+#     from sys import exit, stderr
+#
+#     print('must be run as a script', file=stderr)
+#     exit(1)
 
 # Standard Library
 from os.path import expanduser
@@ -24,7 +24,7 @@ from pygments.styles import get_style_by_name, STYLE_MAP
 from tabulate import tabulate
 
 # Relative
-from completer import SQLiteCompleter
+from .completer import SQLiteCompleter
 
 parser: ArgumentParser = ArgumentParser(
     prog='SQLiteREPL',
