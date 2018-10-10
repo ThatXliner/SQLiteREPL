@@ -28,7 +28,7 @@ setup(
     # https://packaging.python.org/en/latest/single_source_version.html
     version='0.2.0',
 
-    description='SQLite Clinet written in python3',
+    description='SQLite REPL written in python3',
 
     long_description=long_description,
 
@@ -38,7 +38,7 @@ setup(
     # Author details
     author='Norbert Logiewa',
 
-    author_email='norbertlogiewa96\@gmail.com',
+    author_email='norbertlogiewa96@gmail.com',
 
     # Choose your license
     license='MIT',
@@ -52,7 +52,7 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
 
-    keywords='database sqllite3 sqlite clinet SQLite prompt-toolkit prompt_toolkit',
+    keywords='database sqlite3 sqlite REPL SQLite prompt-toolkit prompt_toolkit',
 
     packages=find_packages(),
 
@@ -61,8 +61,8 @@ setup(
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
 
-    install_requires=['prompt_toolkit', 'tabulate', 'pygments'],
+    install_requires=['prompt_toolkit>=2.0', 'tabulate>=0.8.1', 'pygments>=2.2.0'],
 
     entry_points={
         'console_scripts': ['sqlite = sqlite.main:main']
-        })
+    })

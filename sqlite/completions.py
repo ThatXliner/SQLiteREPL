@@ -1,7 +1,12 @@
-from typing import List, Set
+# Standard Library
+from typing import List, Set, Iterable
+from itertools import chain
 
+# 3rd Party
 from prompt_toolkit.completion import Completion
 from prompt_toolkit.document import Document
+
+Completions = Iterable[Completion]
 
 sql_keywords: Set[str] = {
     'ABORT',
@@ -99,7 +104,7 @@ sql_keywords: Set[str] = {
     'OUTER',
     'PLAN',
     'PRAGMA',
-    'PRIMARY',
+    'PRIMARY KEY',
     'QUERY',
     'RAISE',
     'RECURSIVE',
@@ -114,6 +119,7 @@ sql_keywords: Set[str] = {
     'ROW',
     'SAVEPOINT',
     'SELECT',
+    'SELECT * FROM',
     'SET',
     'TABLE',
     'TEMP',
@@ -233,25 +239,26 @@ sql_functions: Set[str] = {
 sql_meta: Set[str] = {
     'exit',
     '.tables',
-    '.quit',}
+    '.quit', }
 
-def sql_completions(document: Document) -> List[Completion]:
-    meta = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="META Command") for i in sql_meta]
-    keywords = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="keyword") for i in sql_keywords]
-    tables = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="table") for i in sql_tables]
-    functions = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="function") for i in sql_functions]
-    dtypes = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="data type") for i in sql_dtypes]
-    numeric = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="numeric (alias)") for i in sql_numeric]
-    text = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="text (alias)") for i in sql_text]
-    real = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="real (alias)") for i in sql_real]
-    integer = [Completion(i, start_position=document.find_boundaries_of_current_word(
-        WORD=True)[0], display_meta="integer (alias)") for i in sql_integer]
-    return meta + keywords + tables + functions + integer + numeric + real + text + dtypes
+
+def sql_completions(doc: Document) -> Completions:
+    meta: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="META Command") for i in sql_meta)
+    keywords: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="keyword") for i in sql_keywords)
+    tables: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="table") for i in sql_tables)
+    functions: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="function") for i in sql_functions)
+    dtypes: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="data type") for i in sql_dtypes)
+    numeric: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="numeric (alias)") for i in sql_numeric)
+    text: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="text (alias)") for i in sql_text)
+    real: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="real (alias)") for i in sql_real)
+    integer: Completions = (Completion(i, start_position=doc.find_boundaries_of_current_word(
+        WORD=True)[0], display_meta="integer (alias)") for i in sql_integer)
+    return chain(meta, keywords, tables, functions, integer, numeric, real, text, dtypes)
