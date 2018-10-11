@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from prompt_toolkit import HTML
+from sqlite3 import Cursor, Connection
 
 
-def main():
+def main() -> None:
     # Standard Library
     from os.path import expanduser
     import sqlite3
     from argparse import ArgumentParser, Namespace
 
     # 3rd Party
-    from prompt_toolkit import PromptSession
+    from prompt_toolkit import PromptSession, HTML
     from prompt_toolkit.auto_suggest import AutoSuggestFromHistory, ThreadedAutoSuggest
     from prompt_toolkit.completion import ThreadedCompleter
     from prompt_toolkit.history import ThreadedHistory, FileHistory
@@ -22,6 +22,7 @@ def main():
 
     # Relative
     from .completer import SQLiteCompleter
+    from .meta_cmds import meta_cmds
 
     parser: ArgumentParser = ArgumentParser(
         prog='SQLiteREPL',
@@ -46,6 +47,13 @@ def main():
         '-m',
         '--multiline',
         help='enable multiline mode (useful for creating tables)',
+        action='store_true',
+        default=False)
+
+    parser.add_argument(
+        '-M',
+        '--memory',
+        help='in memory database',
         action='store_true',
         default=False)
 
@@ -130,11 +138,6 @@ def main():
                                                                           "False") and not i.startswith(
                                                                           "prompt")]))) if args.infobar else None),
         message=args.prompt,
-        bottom_toolbar=((lambda: HTML("SQLite3 REPL | " + " | ".join([i for i in [
-            f"<b><style bg=\"ansiblue\">{i}</style></b> {eval('args.' + i, globals=globals(), locals=locals())}" for i
-            in dir(args) if
-            i[0] != '_'] if not i.endswith("True") and not i.endswith("False") and not i.startswith(
-            "prompt")]))) if args.infobar else None),
         history=ThreadedHistory(FileHistory(expanduser(args.history))),
         auto_suggest=ThreadedAutoSuggest(AutoSuggestFromHistory()),
         include_default_pygments_style=False,
@@ -147,26 +150,32 @@ def main():
         enable_open_in_editor=args.editor,
     )
 
-    # used for fish-like history completion
-    while True:
+    con: Connection = sqlite3.connect(':memory:' if args.memory else expanduser(args.database))
 
+    while True:
         try:
             user_input: str = prompt_session.prompt().strip()
-            low_case: str = user_input.lower()
+            fired = False
 
-            if low_case in ['.quit', 'quit', 'exit', '.exit', 'abort', 'abort']:
-                break
+            for cmd in meta_cmds:
+                if cmd.test(user_input):
+                    cmd.fire(user_input, prompt_session, con)
+                    fired = True
+                    break
 
-            elif low_case == '.tables':
-                user_input = 'select name from sqlite_master where type = "table";'
+            if fired:
+                continue
 
-            try:
-                with sqlite3.connect(expanduser(args.database)) as connection:
-                    print(tabulate(connection.execute(
-                        user_input), tablefmt=args.tablestyle))
+            elif user_input:
+                try:
+                    with con as c:
+                        cursor: Cursor = c.cursor()
+                        cursor.execute(user_input)
+                        print(tabulate(cursor.fetchall(), tablefmt=args.tablestyle))
+                        cursor.close()
 
-            except (sqlite3.Error, sqlite3.IntegrityError) as e:
-                print(f"An error occurred: {e.args[0]}")
+                except (sqlite3.Error, sqlite3.IntegrityError) as e:
+                    print(f"An error occurred: {e.args[0]}")
 
-        except (EOFError, KeyboardInterrupt) as e:
+        except (EOFError, KeyboardInterrupt):
             break

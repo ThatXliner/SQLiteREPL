@@ -1,5 +1,5 @@
 # Standard Library
-from typing import List, Set, Iterable
+from typing import Set, Iterable
 from itertools import chain
 
 # 3rd Party
@@ -234,12 +234,24 @@ sql_functions: Set[str] = {
     'UNICODE(',
     'UNLIKELY(',
     'UPPER(',
-    'ZEROBLOB('}
+    'ZEROBLOB(',
+}
 
 sql_meta: Set[str] = {
-    'exit',
+    '.exit',
+    '.help',
+    '.output',
+    '.quit',
+    '.cd',
+    '.read',
+    '.show',
+    '.dump',
+    '.print',
+    '.shell',
+    '.system',
+    '.prompt',
     '.tables',
-    '.quit', }
+}
 
 
 def sql_completions(doc: Document) -> Completions:

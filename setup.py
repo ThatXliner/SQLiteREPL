@@ -14,7 +14,7 @@ from os.path import dirname, abspath, join
 from setuptools import find_packages, setup
 
 # Get the long description from the README file
-with open(join(abspath(dirname(__file__)), 'README.rst'), encoding='utf-8') as readme:
+with open(join(abspath(dirname(__file__)), 'README.md'), encoding='utf-8') as readme:
     setup(name='sqlite',
 
           # Versions should comply with PEP440.  For a discussion on single-sourcing
