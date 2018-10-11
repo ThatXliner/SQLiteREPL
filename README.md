@@ -64,6 +64,10 @@ The following `.meta` commands are supported:
 
 **NOTE**:
 
+These are actually a subset of what the official sqlite3 REPL supports. The syntax is kept similar.
+
+**NOTE**:
+
 unless you specify the database location with database, it will be
 dropped in `./db.sqlite3`.
 
