@@ -202,6 +202,7 @@ meta_cmds: List[MetaCmd] = [
     ShellCmd(),
     DumpCmd(),
     OutputCmd(),
+    ShowCmd(),
     TablesCmd(),
     PrintCmd(),
 ]
