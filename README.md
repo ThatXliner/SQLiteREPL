@@ -6,6 +6,10 @@
 
 ![alternate text](screens/2.png)
 
+![alternate text](screens/3.png)
+
+![alternate text](screens/5.png)
+
 ```
 usage: SQLiteREPL [-h] [-H [PATH]] [-m] [-M] [--no-history-search]
                   [--no-complete-while-typing] [--no-infobar] [--no-editor]

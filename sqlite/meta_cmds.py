@@ -1,3 +1,6 @@
+"""NOTE: commands in sqlite3 are designed to behave in a similar but not the same way as implemented in the official
+sqlite3 client. """
+
 import sqlite3
 from shlex import split
 from sqlite3 import Connection, Cursor
@@ -9,10 +12,12 @@ from prompt_toolkit import PromptSession
 
 
 class MetaCmd:
-    def __init__(self, *patterns, **kwargs):
+    def __init__(self, *patterns):
         self._patterns = list(patterns)
 
     def test(self, cmdline: str) -> bool:
+        """Check if this command matches the text inserted on the cmdline.
+        """
         cmdline = cmdline.strip()
         for pat in self.patterns:
             if cmdline.startswith(pat):
@@ -20,9 +25,13 @@ class MetaCmd:
         return False
 
     def fire(self, cmdline: str, sess: PromptSession, con) -> None:
+        """To be overridden by implementors.
+        """
         pass
 
     def sanitise(self, cmdline: str) -> str:
+        """Remove spaces and the command itself from the cmdline and return the result.
+        """
         cmdline = cmdline.strip()
         for pat in self.patterns:
             if cmdline.startswith(pat):
@@ -31,6 +40,8 @@ class MetaCmd:
 
     @property
     def patterns(self) -> List[str]:
+        """List of patterns that may trigger this command.
+        """
         return self._patterns
 
 
@@ -60,7 +71,8 @@ class HelpCmd(MetaCmd):
 .shell CMD ARGS...     Run CMD ARGS... in a system shell
 .show                  Show the current values for various settings
 .system CMD ARGS...    Run CMD ARGS... in a system shell
-.tables                List names of tables'''.strip())
+.tables                List names of tables
+'''.strip())
 
 
 class TablesCmd(MetaCmd):
@@ -93,7 +105,7 @@ search case sensitivity {sess.search_ignore_case}
 complete while typing   {sess.complete_while_typing}        
 complete style          {sess.complete_style}        
 open in editor          {sess.enable_open_in_editor}        
-''')
+'''.strip())
 
 
 class DumpCmd(MetaCmd):
