@@ -11,9 +11,9 @@
 ![alternate text](screens/5.png)
 
 ```
-usage: SQLiteREPL [-h] [-H [PATH]] [-m] [-M] [--no-history-search]
+usage: SQLiteREPL [-h] [-H [PATH]] [-m] [-v] [-M] [--no-history-search]
                   [--no-complete-while-typing] [--no-infobar] [--no-editor]
-                  [-t STYLE] [-s [STYLE]] [-p [STRING]]
+                  [-t STYLE] [-s STYLE] [-p STRING]
                   [database]
 
 A dead simple REPL for SQLite
@@ -26,6 +26,7 @@ optional arguments:
   -H [PATH], --history [PATH]
                         path to history file
   -m, --multiline       enable multiline mode (useful for creating tables)
+  -v, --verbose         enable verbose logging
   -M, --memory          in memory database
   --no-history-search   disable history search
   --no-complete-while-typing
@@ -34,11 +35,11 @@ optional arguments:
   --no-editor           disable opening in $EDITOR
   -t STYLE, --tablestyle STYLE
                         set table style to <STYLE> (hint: try "orgtbl", "pipe"
-                        or "simple"
-  -s [STYLE], --style [STYLE]
+                        or "simple")
+  -s STYLE, --style STYLE
                         pygments style (see
                         http://pygments.org/docs/styles/#builtin-styles)
-  -p [STRING], --prompt [STRING]
+  -p STRING, --prompt STRING
                         prompt string
 ```
 
@@ -47,19 +48,19 @@ optional arguments:
 The following `.meta` commands are supported:
 
 ```
-.cd DIRECTORY       Change the working directory to DIRECTORY
-.dump               Dump the database in an SQL text format
-.exit               Exit this program
-.help               Show this message
-.output ?FILE?      Send output to FILE or stdout
-.print STRING...    Print literal STRING
-.prompt MAIN        Replace the prompt
-.quit               Exit this program
-.read FILENAME      Execute SQL in FILENAME
-.shell CMD ARGS...  Run CMD ARGS... in a system shell
-.show               Show the current values for various settings
-.system CMD ARGS... Run CMD ARGS... in a system shell
-.tables             List names of tables
+.cd [DIRECTORY]        Change the working directory to DIRECTORY or $HOME
+.dump [FILE]           Dump the database in an SQL text format to FILE or STDOUT 
+.exit                  Exit this program
+.help                  Show this message
+.output [FILE]         Send output to FILE or STDOUT
+.print STRING...       Print literal STRING
+.prompt MAIN           Replace the prompt
+.quit                  Exit this program
+.read FILENAME         Execute SQL in FILENAME
+.shell CMD ARGS...     Run CMD ARGS... in a system shell
+.show [PATTERN]        Show the current values for various settings
+.system CMD ARGS...    Run CMD ARGS... in a system shell
+.tables                List names of tables
 ```
 
 **NOTE**:
@@ -69,7 +70,7 @@ These are actually a subset of what the official sqlite3 REPL supports. The synt
 **NOTE**:
 
 unless you specify the database location with database, it will be
-dropped in `./db.sqlite3`.
+loaded in memory.
 
 ## Customisation
 
