@@ -76,6 +76,7 @@ loaded in memory.
 
 - check out pygments for all the possible styles
 - check out tabulate for all the table types
+- use aliases for "semi-permanent" config e.g.: `alias sqlite='sqlite --multiline'`
 
 ## Installation
 
