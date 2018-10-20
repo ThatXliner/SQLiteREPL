@@ -76,6 +76,12 @@ dropped in `./db.sqlite3`.
 - check out pygments for all the possible styles
 - check out tabulate for all the table types
 
+## Installation
+
+```sh
+$ pip install --user 'git+https://github.com/nl253/SQLiteREPL@master'
+```
+
 ## Limitations
 
 -   not context sensitive
@@ -85,7 +91,7 @@ dropped in `./db.sqlite3`.
 ## Dependencies
 
 - [prompt-toolkit](https://github.com/jonathanslenders/python-prompt-toolkit)
-- tabulate
+- [tabulate](https://pypi.org/project/tabulate/)
 - Python >= 3.7
 
 **Note**:
@@ -95,3 +101,4 @@ SQLiteREPL has been updated to use `prompt_toolkit 2`.
 ## Related
 
 -   <https://github.com/dbcli/mycli>
+

@@ -8,7 +8,7 @@ SQLite REPL written in python3
 # Always prefer setuptools over distutils
 # To use a consistent encoding
 from codecs import open
-from os.path import dirname, abspath, join
+from os.path import abspath, dirname, join
 
 # 3rd Party
 from setuptools import find_packages, setup
@@ -41,7 +41,6 @@ with open(join(abspath(dirname(__file__)), 'README.md'), encoding='utf-8') as re
               'Intended Audience :: Developers',
               'Topic :: Database :: Front-Ends',
               'License :: OSI Approved :: MIT License',
-              'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: 3.7',
           ],
 
@@ -54,7 +53,8 @@ with open(join(abspath(dirname(__file__)), 'README.md'), encoding='utf-8') as re
           # requirements files see:
           # https://packaging.python.org/en/latest/requirements.html
 
-          install_requires=['prompt_toolkit>=2.0', 'tabulate>=0.8.1', 'pygments>=2.2.0'],
+          install_requires=['prompt_toolkit>=2.0',
+                            'tabulate>=0.8.1', 'pygments>=2.2.0'],
 
           entry_points={
               'console_scripts': ['sqlite = sqlite.main:main']
