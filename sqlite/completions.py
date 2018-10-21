@@ -1,5 +1,9 @@
 # Standard Library
-from typing import Dict, Generator, Iterable
+from functools import reduce
+from glob import iglob
+from os import listdir
+from os.path import isfile, expanduser, isdir
+from typing import Dict, Generator, Iterable, List, Set
 
 # 3rd Party
 from prompt_toolkit.completion import (
@@ -7,7 +11,6 @@ from prompt_toolkit.completion import (
     Completer,
     Completion,
     merge_completers,
-    PathCompleter,
     ThreadedCompleter,
 )
 from prompt_toolkit.document import Document
@@ -374,7 +377,7 @@ sql_meta: Dict[str, str] = {f'.{k}': v for k, v in {
 }.items()}
 
 
-class BaseSQLiteCompleter(Completer):
+class MetaCmdSQLiteCompleter(Completer):
     def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
 
         if len(doc.current_line.strip()) == 0: return None
@@ -382,36 +385,89 @@ class BaseSQLiteCompleter(Completer):
         curr_word = doc.get_word_before_cursor(WORD=True)
         curr_word_upper = curr_word.upper()
         curr_word_lower = curr_word.lower()
-        start_position = doc.find_boundaries_of_current_word(WORD=True)[0]
-
-        def matches(completion: str) -> bool:
-            return completion.startswith(curr_word_lower) or completion.startswith(curr_word_upper)
+        start_position, _ = doc.find_boundaries_of_current_word(WORD=True)
 
         if curr_word.startswith('.'):
-            for k, v in sql_meta.items():
-                if matches(k):
-                    yield Completion(k, start_position=start_position, display_meta=v)
+            for completion, descr in sql_meta.items():
+                if completion.startswith(curr_word_lower) or completion.startswith(curr_word_upper):
+                    yield Completion(completion, start_position=start_position, display_meta=descr)
             return
+
+
+class CustomBinariesCompleter(Completer):
+    CACHE: Set[str] = set(reduce(lambda x, y: x + y, [
+        [binary for binary in listdir(d) if 2 <= len(binary) <= 12 and binary.find('.') == -1] if isdir(
+            d) else [] for d in map(expanduser, ['/usr/bin', '/usr/local/bin', '~/.local/bin'])]))
+
+    def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
+
+        if len(doc.current_line.strip()) == 0: return None
+
+        pos, _ = doc.find_boundaries_of_current_word()
+
+        if (doc.text.startswith('.shell') or doc.text.startswith('.system')) and len(doc.current_line.split(' ')) < 3:
+            for binary in CustomBinariesCompleter.CACHE:
+                if doc.text[doc.cursor_position:].startswith(binary) or binary.startswith(
+                        doc.text[doc.cursor_position:]):
+                    yield Completion(binary, start_position=pos, display_meta='executable')
+
+
+class CustomFileSystemCompleter(Completer):
+    def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
+
+        if len(doc.current_line.strip()) == 0:
+            return
+
+        patterns: List[str] = ['./', '/', '~/']
+
+        pos, _ = doc.find_boundaries_of_current_word(WORD=True)
+        word_ = doc.get_word_under_cursor(WORD=True)
+        word = expanduser(word_)
+
+        for pattern in patterns:
+            if word_.startswith(pattern):
+                for node in iglob(expanduser(word_) + '*'):
+                    if node.startswith(word):
+                        yield Completion(node, start_position=pos, display_meta=('file' if isfile(node) else 'dir'))
+                return
+
+
+class BaseSQLiteCompleter(Completer):
+    def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
+
+        if len(doc.current_line.strip()) == 0:
+            return None
+
+        word = doc.get_word_before_cursor(WORD=True)
+        word_upper = word.upper()
+        word_lower = word.lower()
+        pos = doc.find_boundaries_of_current_word(WORD=True)[0]
+
+        def matches(completion: str) -> bool:
+            return completion.startswith(word_lower) or completion.startswith(word_upper)
 
         def from_iter(words: Iterable[str], meta_info: str) -> Generator[Completion, None, None]:
             for w in filter(matches, words):
-                yield Completion(w, start_position=start_position, display_meta=meta_info)
+                yield Completion(w, start_position=pos, display_meta=meta_info)
 
         yield from from_iter(sql_pragmas, "pragma")
         yield from from_iter([f'pragma_{i}(' for i in sql_pragmas], "pragma function")
-        yield from from_iter(sql_agg_functs, "aggr function")
+        yield from from_iter(sql_agg_functs, "aggregate function")
         yield from from_iter(sql_keywords, "keyword")
         yield from from_iter(sql_tables, "table")
         yield from from_iter(sql_functions, "function")
         yield from from_iter(sql_dtypes, "data type")
-        yield from from_iter(sql_numeric, "numeric (alias)")
-        yield from from_iter(sql_text, "text (alias)")
-        yield from from_iter(sql_real, "real (alias)")
-        yield from from_iter(sql_integer, "integer (alias)")
+        yield from from_iter(sql_numeric, "NUMERIC (alias)")
+        yield from from_iter(sql_text, "TEXT (alias)")
+        yield from from_iter(sql_real, "REAL (alias)")
+        yield from from_iter(sql_integer, "INTEGER (alias)")
 
 
 def SQLiteCompleter() -> Completer:
     return ThreadedCompleter(
         merge_completers([
+            MetaCmdSQLiteCompleter(),
+            CustomBinariesCompleter(),
+            CustomFileSystemCompleter(),
             BaseSQLiteCompleter(),
-            PathCompleter(expanduser=True)]))
+        ]))
