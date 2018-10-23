@@ -4,19 +4,19 @@ sqlite3 client. """
 # Standard Library
 import sqlite3
 import sys
-from tempfile import NamedTemporaryFile
-from os.path import expanduser, isfile, abspath
 from os import getcwd, getenv, remove
+from os.path import expanduser, isfile, abspath
 from shlex import split
 from sqlite3 import Cursor
 from subprocess import PIPE, run
+from tempfile import NamedTemporaryFile
 from typing import List, Optional, Dict, Any
 
 # 3rd Party
 from tabulate import tabulate
 
-from .utils import custom_prompt_sess
 from .log import log
+from .utils import custom_prompt_sess
 
 
 class MetaCmd:
@@ -67,19 +67,22 @@ class ExitCmd(MetaCmd):
 
 class HelpCmd(MetaCmd):
     HELP_MSG: str = '''
-.cd [DIRECTORY]        Change the working directory to DIRECTORY or $HOME
-.dump [FILE]           Dump the database in an SQL text format to FILE or STDOUT 
-.exit                  Exit this program
-.help                  Show this message
-.output [FILE]         Send output to FILE or STDOUT
-.print STRING...       Print literal STRING
-.prompt MAIN           Replace the prompt
-.quit                  Exit this program
-.read FILENAME         Execute SQL in FILENAME
-.shell CMD ARGS...     Run CMD ARGS... in a system shell
-.show [PATTERN]        Show the current values for various settings
-.system CMD ARGS...    Run CMD ARGS... in a system shell
-.tables                List names of tables
+    
+.cd     [DIR]            Change the working directory to DIR or $HOME
+.dump   [FILE]           Dump the database in an SQL text format to FILE or STDOUT 
+.exit                    Exit this program
+.help                    Show this message
+.mode   [STYLE]          Change table style to STYLE
+.output [FILE]           Send output to FILE or STDOUT
+.print  [STRING, ...]    Print literal STRING
+.prompt [MAIN]           Replace the prompt
+.quit                    Exit this program
+.read   [FILE]           Execute SQL in FILENAME
+.shell  <CMD> [ARG, ...] Run CMD ARGS... in a system shell
+.show   [PATTERN]        Show the current values for various settings
+.system <CMD> [ARG, ...] Run CMD ARGS... in a system shell
+.tables                  List names of tables
+
 '''.strip()
 
     def __init__(self):
@@ -110,24 +113,44 @@ class ShowCmd(MetaCmd):
     @staticmethod
     def _docstring(context: Dict[str, Any]) -> str:
         return f'''
+SQLite
+--------
 sqlite                  {sqlite3.sqlite_version}
 database                {context['database']}
-CWD                     {context['cwd']}
-EDITOR                  {getenv('EDITOR', '?')}
-
-multiline               {context['prompt_session'].multiline}
 verbose                 {context['verbose']}
 
+Environment
+-----------
+CWD                     {context['cwd']}
+EDITOR                  {getenv('EDITOR', '?')}
+HOME                    {getenv('HOME', '?')}
+USER                    {getenv('USER', '?')}
+LC_ALL                  {getenv('LC_ALL', '?')}
+
+Styling
+-----------
 prompt                  {context['prompt_session'].message}
 style                   {context['prompt_session'].style}
+table style             {context['table_style']}
 
+Prompt Toolkit Main
+-------------------
+multi-line              {context['prompt_session'].multiline}
 editing mode            {context['prompt_session'].editing_mode}
+
+Prompt Toolkit Specifics
+------------------------
+bottom toolbar          {context["prompt_session"].bottom_toolbar}
+wrap lines              {context["prompt_session"].wrap_lines}
+right prompt            {context["prompt_session"].rprompt}
+mouse support           {context["prompt_session"].mouse_support}
 color depth             {context['prompt_session'].color_depth}
 history search          {context['prompt_session'].enable_history_search}
 search case sensitivity {context['prompt_session'].search_ignore_case}
 complete while typing   {context['prompt_session'].complete_while_typing}
 complete style          {context['prompt_session'].complete_style}
 open in editor          {context['prompt_session'].enable_open_in_editor}
+
     '''.strip()
 
     def fire(self, context: Dict[str, Any]) -> None:
@@ -149,7 +172,7 @@ class DumpCmd(MetaCmd):
     def fire(self, context: Dict[str, Any]) -> None:
         maybe_file: Optional[str] = expanduser(self.sanitise(context['user_input']))
         if maybe_file:
-            log.debug(f'performing a database dump to {maybe_file}')
+            log.info(f'performing a database dump to {maybe_file}')
             n = 0
             with open(maybe_file, mode='a', encoding='utf-8') as f:
                 for line in context['con'].iterdump():
@@ -157,7 +180,7 @@ class DumpCmd(MetaCmd):
                     n += 1
             print(f'wrote database dump to {maybe_file} ({n} lines of SQL)')
         else:
-            log.debug('performing a database dump to STDOUT')
+            log.info('performing a database dump to STDOUT')
             for line in context['con'].iterdump():
                 print(line)
 
@@ -169,7 +192,7 @@ class OpenCmd(MetaCmd):
     def fire(self, context: Dict[str, Any]) -> None:
         file_name: str = expanduser(self.sanitise(context['user_input']))
         if file_name:
-            log.debug(f'new database path is {file_name}')
+            log.info(f'new database path is {file_name}')
             context['con'].commit()
             context['con'].close()
             log.debug(f'closed old connection to {context["database"]}')
@@ -217,16 +240,16 @@ class LogCmd(MetaCmd):
         log.setLevel(WARN if is_verbose else DEBUG)
 
         if (maybe_file.lower() == 'stdout') or (maybe_file == ''):
-            log.debug(f'redirecting logging to STDOUT')
+            log.info(f'redirecting logging to STDOUT')
             logging.basicConfig(stream=sys.__stdout__)
 
         elif maybe_file:
-            log.debug(f'redirecting logging to {maybe_file}')
+            log.info(f'redirecting logging to {maybe_file}')
             logging.basicConfig(filename=maybe_file)
 
         context['verbose'] = not is_verbose
 
-        log.debug(f'verbose logging {"on" if context["verbose"] else "off"}')
+        log.info(f'verbose logging {"on" if context["verbose"] else "off"}')
 
 
 class PromptCmd(MetaCmd):
@@ -235,8 +258,18 @@ class PromptCmd(MetaCmd):
 
     def fire(self, context: Dict[str, Any]) -> None:
         new_prompt = self.sanitise(context['user_input']) + " "
-        log.debug(f'changing prompt from {context["prompt"]} to {new_prompt}')
+        log.info(f'changing prompt from {context["prompt"]} to {new_prompt}')
         context['prompt_session'].message = new_prompt
+
+
+class ModeCmd(MetaCmd):
+    def __init__(self):
+        super().__init__(".mode")
+
+    def fire(self, context: Dict[str, Any]) -> None:
+        new_style = self.sanitise(context['user_input'])
+        log.info(f'changing table style from {context["table_style"]} to {new_style}')
+        context['table_style'] = new_style
 
 
 class ReadCmd(MetaCmd):
@@ -259,7 +292,7 @@ class ReadCmd(MetaCmd):
         file_name: str = expanduser(self.sanitise(context['user_input']))
         if file_name and isfile(file_name):
 
-            log.debug(f'reading SQL script from {file_name}')
+            log.info(f'reading SQL script from {file_name}')
 
             editor: Optional[str] = getenv('EDITOR')
 
@@ -307,10 +340,11 @@ class OutputCmd(MetaCmd):
         file_name: str = expanduser(self.sanitise(context['user_input']))
 
         if file_name == '' or file_name.lower() == 'stdout':
+            log.info("redirecting output to STDOUT")
             sys.stdout = sys.__stdout__
 
         elif file_name:
-            log.debug(f'redirecting output to {file_name}')
+            log.info(f'redirecting output to {file_name}')
             sys.stdout = open(file_name, encoding='utf-8', mode='a')
 
 
@@ -325,7 +359,7 @@ class CdCmd(MetaCmd):
             chdir(path if path else expanduser('~/'))
             # update cwd (necessary) to keep data in context valid
             context['cwd'] = getcwd()
-            log.debug(f'changed dir to {context["cwd"]}')
+            log.info(f'changed dir to {context["cwd"]}')
             return
         except FileNotFoundError:
             pass
@@ -338,7 +372,7 @@ class BackupCmd(MetaCmd):
     def fire(self, context: Dict[str, Any]) -> None:
         target_file = self.sanitise(context['user_input'])
         if target_file:
-            log.debug(f'backing up the database to {target_file}')
+            log.info(f'backing up the database to {target_file}')
             with sqlite3.connect(target_file) as backup:
                 context['con'].backup(
                     target=backup,
@@ -360,6 +394,7 @@ meta_cmds: List[MetaCmd] = [
     ShowCmd(),
     TablesCmd(),
     OpenCmd(),
+    ModeCmd(),
     LogCmd(),
     PrintCmd(),
 ]

@@ -91,28 +91,28 @@ def main() -> None:
 
     parser.add_argument(
         '-t',
-        '--tablestyle',
+        '--table_style',
         help='set table style to <STYLE> (hint: try "orgtbl", "pipe" or "simple")',
         metavar='STYLE',
         choices=[
-            "plain",
-            "simple",
-            "grid",
             "fancy_grid",
-            "pipe",
-            "orgtbl",
+            "grid",
+            "html",
             "jira",
+            "latex",
+            "latex_booktabs",
+            "latex_raw",
+            "mediawiki",
+            "moinmoin",
+            "orgtbl",
+            "pipe",
+            "plain",
             "presto",
             "psql",
             "rst",
-            "mediawiki",
-            "moinmoin",
-            "youtrack",
-            "html",
-            "latex",
-            "latex_raw",
-            "latex_booktabs",
+            "simple",
             "textile",
+            "youtrack",
         ],
         default='simple')
 
@@ -173,7 +173,7 @@ def main() -> None:
                     with context['con'] as c:
                         cursor: Cursor = c.cursor()
                         cursor.execute(context['user_input'])
-                        print(tabulate(cursor.fetchall(), tablefmt=context['tablestyle']))
+                        print(tabulate(cursor.fetchall(), tablefmt=context['table_style']))
                         cursor.close()
 
                 except (sqlite3.Error, sqlite3.IntegrityError) as e:
