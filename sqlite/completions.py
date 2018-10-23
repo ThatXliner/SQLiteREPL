@@ -1,12 +1,12 @@
 # Standard Library
 from functools import reduce
 from glob import iglob
-from os import listdir
+from operator import concat
+from os import listdir, getenv
 from os.path import expanduser, isdir, isfile
 from typing import Dict, Generator, Iterable, List, Set
 
 # 3rd Party
-from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion, ThreadedCompleter, merge_completers
 from prompt_toolkit.document import Document
 
@@ -85,20 +85,18 @@ class _TableStyleCompleter(Completer):
 
 
 class _ExecutablesCompleter(Completer):
-    CACHE: Set[str] = set(reduce(lambda x, y: x + y, [
-        [binary for binary in listdir(d) if 2 <= len(binary) <= 12 and binary.find('.') == -1] if isdir(
-            d) else [] for d in map(expanduser, ['/usr/bin', '/usr/local/bin', '~/.local/bin'])]))
+    CACHE: Set[str] = set(reduce(concat, [listdir(d) for d in filter(isdir, filter(bool, getenv("PATH").split(':')))]))
 
     def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
 
         if len(doc.current_line.strip()) == 0: return
 
+        curr_word = doc.get_word_before_cursor(WORD=True)
         pos, _ = doc.find_boundaries_of_current_word()
 
         if (doc.text.startswith('.shell') or doc.text.startswith('.system')) and len(doc.current_line.split(' ')) < 3:
             for binary in _ExecutablesCompleter.CACHE:
-                if doc.text[doc.cursor_position:].startswith(binary) or binary.startswith(
-                        doc.text[doc.cursor_position:]):
+                if binary.startswith(curr_word):
                     yield Completion(binary, start_position=pos, display_meta='executable')
 
 
