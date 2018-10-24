@@ -63,14 +63,14 @@ def main() -> None:
 
     parser.add_argument(
         '--no-history-search',
-        dest='historysearch',
+        dest='history_search',
         help='disable history search',
         action='store_false',
         default=True)
 
     parser.add_argument(
         '--no-complete-while-typing',
-        dest='completewhiletyping',
+        dest='complete_while_typing',
         help='disable completion while typing',
         action='store_false',
         default=True)

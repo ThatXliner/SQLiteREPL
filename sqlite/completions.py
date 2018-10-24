@@ -13,21 +13,21 @@ from prompt_toolkit.document import Document
 
 class _MetaCmdCompleter(Completer):
     META: Dict[str, str] = {f'.{k}': v for k, v in {
-        'exit': 'exit the REPL',
-        'open': 'close this database and open <database>',
-        'help': 'display all available commands',
-        'output': 'redirect ouput of commands to <path>',
-        'quit': 'exit the REPL',
-        'mode': 'change table style to <style>',
-        'cd': 'change directory to <dir>',
-        'read': 'read SQL from <file>',
-        'show': 'display info about the REPL',
-        'dump': 'stringify database into SQL commands',
-        'print': 'display given <string> in the terminal',
-        'shell': 'run an OS command <cmd>',
-        'system': 'run an OS command <cmd>',
-        'prompt': 'change prompt to <str>',
-        'tables': 'show all tables in the database',
+        'cd': ("[DIR]", 'Change directory to <dir>'),
+        'dump': ("[FILE]", 'Stringify database into SQL commands'),
+        'exit': ("", 'Exit the REPL'),
+        'help': ("[PATTERN]", 'Display meta commands matching PATTERN'),
+        'mode': ("[STYLE]", 'Change table style to STYLE'),
+        'open': ("[DATABASE]", 'Close this database and open DATABASE'),
+        'output': ("[FILE]", 'Redirect output of commands to FILE'),
+        'print': ("[STRING, ...]", 'Display given <string> in the terminal'),
+        'prompt': ("[STRING]", 'Change prompt to STRING'),
+        'quit': ("", 'Exit the REPL'),
+        'read': ("[FILE]", 'Eval SQL from FILE'),
+        'shell': ("<CMD> [ARG, ...]", 'Run an OS command CMD'),
+        'show': ("[PATTERN]", 'Display info about the REPL starting with PATTERN'),
+        'system': ("<CMD> [ARG, ...]", 'Run an OS command <cmd>'),
+        'tables': ("[PATTERN]", 'Show tables in the database matching [PATTERN]'),
     }.items()}
 
     def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
@@ -40,7 +40,8 @@ class _MetaCmdCompleter(Completer):
         start_position, _ = doc.find_boundaries_of_current_word(WORD=True)
 
         if curr_word.startswith('.'):
-            for completion, descr in _MetaCmdCompleter.META.items():
+            for completion, pair in _MetaCmdCompleter.META.items():
+                syntax, descr = pair
                 if completion.startswith(curr_word_lower) or completion.startswith(curr_word_upper):
                     yield Completion(completion, start_position=start_position, display_meta=descr)
             return

@@ -40,7 +40,7 @@ def custom_prompt_sess(context: Dict[str, Any]) -> PromptSession:
         lexer=PygmentsLexer(SqlLexer),
         style=style_from_pygments_cls(get_style_by_name(context['style'])),
         completer=SQLiteCompleter(),
-        enable_history_search=context['historysearch'],
-        complete_while_typing=context['completewhiletyping'],
+        enable_history_search=context['history_search'],
+        complete_while_typing=context['complete_while_typing'],
         enable_open_in_editor=bool(context['editor']),
     )

@@ -15,6 +15,7 @@ from typing import List, Optional, Dict, Any
 # 3rd Party
 from tabulate import tabulate
 
+from .completions import _MetaCmdCompleter
 from .log import log
 from .utils import custom_prompt_sess
 
@@ -66,31 +67,22 @@ class ExitCmd(MetaCmd):
 
 
 class HelpCmd(MetaCmd):
-    HELP_MSG: str = '''
-    
-.cd     [DIR]            Change the working directory to DIR or $HOME
-.dump   [FILE]           Dump the database in an SQL text format to FILE or STDOUT 
-.exit                    Exit this program
-.help                    Show this message
-.mode   [STYLE]          Change table style to STYLE
-.output [FILE]           Send output to FILE or STDOUT
-.print  [STRING, ...]    Print literal STRING
-.prompt [MAIN]           Replace the prompt
-.quit                    Exit this program
-.read   [FILE]           Execute SQL in FILENAME
-.shell  <CMD> [ARG, ...] Run CMD ARGS... in a system shell
-.show   [PATTERN]        Show the current values for various settings
-.system <CMD> [ARG, ...] Run CMD ARGS... in a system shell
-.tables                  List names of tables
-
-'''.strip()
+    HELP_MSG: str = '\n'.join(
+        ["%-10s %-20s %s" % (cmd, pair[0], pair[1]) for cmd, pair in _MetaCmdCompleter.META.items()])
 
     def __init__(self):
         super().__init__(".help")
 
     def fire(self, context: Dict[str, Any]) -> None:
-        log.debug('displaying help')
-        print(HelpCmd.HELP_MSG)
+        pattern: str = self.sanitise(context['user_input'])
+        if not pattern:
+            log.debug('displaying all help')
+            print(HelpCmd.HELP_MSG)
+        else:
+            log.info(f'displaying help for {pattern}')
+            for line in HelpCmd.HELP_MSG.splitlines():
+                if pattern.lower() in line.lower():
+                    print(line)
 
 
 class TablesCmd(MetaCmd):
@@ -98,10 +90,16 @@ class TablesCmd(MetaCmd):
         super().__init__(".tables")
 
     def fire(self, context: Dict[str, Any]) -> None:
-        log.debug('showing all tables')
+        pattern: str = self.sanitise(context['user_input'])
         with context['con'] as c:
             cursor: Cursor = c.cursor()
-            cursor.execute("SELECT * FROM sqlite_master where type='table'")
+            if not pattern:
+                log.debug('showing all tables')
+                cursor.execute("SELECT * FROM sqlite_master where type='table'")
+            else:
+                log.debug(f'showing tables matching {pattern}')
+                cursor.execute(f"SELECT * FROM sqlite_master WHERE type='table' AND tbl_name LIKE '%{pattern}%'")
+
             print(tabulate(cursor.fetchall()))
             cursor.close()
 
