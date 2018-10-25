@@ -194,13 +194,16 @@ prompt                  {context['prompt_session'].message}
 style                   {context['style']}
 table style             {context['table_style']}
 
-Prompt Toolkit Main
--------------------
+Prompt Toolkit 
+--------------
+
+Main
+====
 multi-line              {context['prompt_session'].multiline}
 editing mode            {context['prompt_session'].editing_mode}
 
-Prompt Toolkit Specifics
-------------------------
+Specifics
+=========
 bottom toolbar          {context["prompt_session"].bottom_toolbar}
 wrap lines              {context["prompt_session"].wrap_lines}
 right prompt            {context["prompt_session"].rprompt}
@@ -209,7 +212,6 @@ color depth             {context['prompt_session'].color_depth}
 history search          {context['prompt_session'].enable_history_search}
 search case sensitivity {context['prompt_session'].search_ignore_case}
 complete while typing   {context['prompt_session'].complete_while_typing}
-complete style          {context['prompt_session'].complete_style}
 open in editor          {context['prompt_session'].enable_open_in_editor}
 
     '''.strip()

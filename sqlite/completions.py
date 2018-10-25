@@ -21,7 +21,8 @@ class _MetaCmdCompleter(Completer):
         'mode': ("[STYLE]", 'Change table style to STYLE or display current style if STYLE is not provided'),
         'open': (
             "[DATABASE]", 'Close this database and open DATABASE or show current database if DATABASE is not provided'),
-        'output': ("[FILE]", 'Redirect output of commands to FILE (or to STDOUT if FILE == "stdout"), shows current output stream if FILE is not provided'),
+        'output': ("[FILE]", 'Redirect output of commands to FILE (or to STDOUT if FILE == "stdout"), shows current '
+                             'output stream if FILE is not provided'),
         'print': ("[STRING, ...]", 'Display given STRING in the terminal'),
         'prompt': ("[STRING]", 'Change prompt to STRING'),
         'quit': ("", 'Exit the REPL'),
