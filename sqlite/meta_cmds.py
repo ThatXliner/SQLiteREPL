@@ -1,5 +1,7 @@
-"""NOTE: commands in sqlite3 are designed to behave in a similar but not the same way as implemented in the official
-sqlite3 client. """
+"""
+NOTE: commands in sqlite are designed to behave in a similar
+but not the same way as implemented in the official sqlite3 client.
+"""
 
 # Standard Library
 import sqlite3

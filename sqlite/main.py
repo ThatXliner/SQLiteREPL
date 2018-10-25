@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+# Standard Library
+import sys
 from os import getcwd
+from os.path import expanduser, isfile
+from argparse import ArgumentParser, Namespace
 from sqlite3 import Cursor
+import sqlite3
 from typing import Dict, Any
 
+# 3rd Party
+from pygments.styles import STYLE_MAP
+from tabulate import tabulate
+
+# Relative
+from .meta_cmds import meta_cmds
 from .utils import custom_prompt_sess, custom_toolbar
 from .log import log
 
 
 def main() -> None:
-    # Standard Library
-    from os.path import expanduser
-    import sqlite3
-    from argparse import ArgumentParser, Namespace
-
-    # 3rd Party
-    from pygments.styles import STYLE_MAP
-    from tabulate import tabulate
-
-    # Relative
-    from .meta_cmds import meta_cmds
-
     parser: ArgumentParser = ArgumentParser(
         prog='SQLiteREPL',
         description='A dead simple REPL for SQLite',
@@ -39,6 +39,14 @@ def main() -> None:
         help='path to history file',
         nargs='?',
         default='~/.SqliteREPL_history')
+
+    parser.add_argument(
+        '-e',
+        '--eval',
+        default=False,
+        metavar='FILE',
+        nargs='?',
+        help='eval SQL script before running the REPL')
 
     parser.add_argument(
         '-m',
@@ -122,7 +130,7 @@ def main() -> None:
         metavar='STYLE',
         help='pygments style (see http://pygments.org/docs/styles/#builtin-styles)',
         choices=list(STYLE_MAP.keys()),
-        default='monokai')
+        default='default')
 
     parser.add_argument(
         '-p',
@@ -144,17 +152,32 @@ def main() -> None:
 
     context: Dict[str, Any] = dict()
 
+    # copy all from parsed args into context
     for k, v in vars(args).items():
         context[k] = v
 
     context['database'] = expanduser(args.database) if args.database != ':memory:' else args.database
     context['con'] = sqlite3.connect(context['database'])
+
+    # evaluate SQL script before entering interactive mode
+    if args.eval:
+        log.info(f'reading SQL from {args.eval}')
+        if isfile(args.eval):
+            with context['con'] as c:
+                with open(args.eval, encoding='utf-8') as f:
+                    cursor: Cursor = c.cursor()
+                    cursor.executescript(f.read())
+                    print(tabulate(cursor.fetchall(), tablefmt=context['table_style']))
+                    cursor.close()
+        else:
+            raise FileNotFoundError(f'could not read SQL from {args.eval}, not a valid file')
+
     context['prompt_session'] = custom_prompt_sess(context)
     context['cwd'] = getcwd()
 
     while True:
         try:
-            log.info(context)
+            log.debug(context)
             context['user_input'] = context['prompt_session'].prompt(
                 bottom_toolbar=(lambda: custom_toolbar(context))).strip()
             fired = False
