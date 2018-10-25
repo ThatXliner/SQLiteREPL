@@ -24,6 +24,7 @@ class _MetaCmdCompleter(Completer):
         'prompt': ("[STRING]", 'Change prompt to STRING'),
         'quit': ("", 'Exit the REPL'),
         'read': ("[FILE]", 'Eval SQL from FILE'),
+        'schema': ("[PATTERN]", 'Show schemas for tables in the database matching [PATTERN]'),
         'shell': ("<CMD> [ARG, ...]", 'Run an OS command CMD'),
         'show': ("[PATTERN]", 'Display info about the REPL starting with PATTERN'),
         'system': ("<CMD> [ARG, ...]", 'Run an OS command <cmd>'),

@@ -87,6 +87,26 @@ class HelpCmd(MetaCmd):
                     print(line)
 
 
+class SchemaCmd(MetaCmd):
+    def __init__(self):
+        super().__init__('.schema')
+
+    def fire(self, context: Dict[str, Any]) -> None:
+        pattern: str = self.sanitise(context['user_input'])
+        with context['con'] as c:
+            cursor: Cursor = c.cursor()
+            if not pattern:
+                log.debug('showing schemas for tables')
+                cursor.execute("SELECT tbl_name, sql FROM sqlite_master where type='table'")
+            else:
+                log.debug(f'showing schemas for tables matching {pattern}')
+                cursor.execute(
+                    f"SELECT tbl_name, sql FROM sqlite_master WHERE type='table' AND tbl_name LIKE '%{pattern}%'")
+
+            print(tabulate(cursor.fetchall()))
+            cursor.close()
+
+
 class TablesCmd(MetaCmd):
     def __init__(self):
         super().__init__(".tables")
@@ -97,10 +117,10 @@ class TablesCmd(MetaCmd):
             cursor: Cursor = c.cursor()
             if not pattern:
                 log.debug('showing all tables')
-                cursor.execute("SELECT * FROM sqlite_master where type='table'")
+                cursor.execute("SELECT tbl_name FROM sqlite_master where type='table'")
             else:
                 log.debug(f'showing tables matching {pattern}')
-                cursor.execute(f"SELECT * FROM sqlite_master WHERE type='table' AND tbl_name LIKE '%{pattern}%'")
+                cursor.execute(f"SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name LIKE '%{pattern}%'")
 
             print(tabulate(cursor.fetchall()))
             cursor.close()
@@ -396,5 +416,6 @@ meta_cmds: List[MetaCmd] = [
     OpenCmd(),
     ModeCmd(),
     LogCmd(),
+    SchemaCmd(),
     PrintCmd(),
 ]
