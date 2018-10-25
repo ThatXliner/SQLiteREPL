@@ -7,16 +7,17 @@ but not the same way as implemented in the official sqlite3 client.
 import sqlite3
 import sys
 from os import getcwd, getenv, remove
-from os.path import expanduser, isfile, abspath
+from os.path import abspath, expanduser, isfile
 from shlex import split
 from sqlite3 import Cursor
 from subprocess import PIPE, run
 from tempfile import NamedTemporaryFile
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 # 3rd Party
 from tabulate import tabulate
 
+# Relative Imports
 from .completions import _MetaCmdCompleter
 from .log import log
 from .utils import custom_prompt_sess
@@ -97,7 +98,8 @@ class SchemaCmd(MetaCmd):
             cursor: Cursor = c.cursor()
             if not pattern:
                 log.debug('showing schemas for tables')
-                cursor.execute("SELECT tbl_name, sql FROM sqlite_master where type='table'")
+                cursor.execute(
+                    "SELECT tbl_name, sql FROM sqlite_master where type='table'")
             else:
                 log.debug(f'showing schemas for tables matching {pattern}')
                 cursor.execute(
@@ -105,6 +107,43 @@ class SchemaCmd(MetaCmd):
 
             print(tabulate(cursor.fetchall()))
             cursor.close()
+
+
+class StyleCmd(MetaCmd):
+    def __init__(self):
+        super().__init__(".style")
+
+    def fire(self, context: Dict[str, Any]) -> None:
+        new_style: str = self.sanitise(context['user_input'])
+        if not new_style:
+            print(f'Current style is {context["style"]}.')
+        else:
+            log.info(f'changing style from {context["style"]} to {new_style}')
+            context['style'] = new_style
+            context['prompt_session'] = custom_prompt_sess(context)
+
+
+class SaveCmd(MetaCmd):
+    def __init__(self):
+        super().__init__(".save")
+
+    def fire(self, context: Dict[str, Any]) -> None:
+        dest: str = self.sanitise(context['user_input'])
+        if not dest:
+            print('Missing destination file name.')
+            print(f'Syntax: .save <PATH>')
+        elif context['database'] == ':memory:':
+            log.info(f'saving database in  {dest}')
+            sql: str = "\n".join(context['con'].iterdump())
+            context['database'] = expanduser(dest)
+            context['con'] = sqlite3.connect(context['database'])
+            with context['con'] as c:
+                cursor: Cursor = c.cursor()
+                cursor.executescript(sql)
+                cursor.close()
+            print(f"Saved database to {dest}.")
+        elif context['database'] != ':memory:':
+            print(f'You need to have a database in memory for it to work.')
 
 
 class TablesCmd(MetaCmd):
@@ -117,10 +156,12 @@ class TablesCmd(MetaCmd):
             cursor: Cursor = c.cursor()
             if not pattern:
                 log.debug('showing all tables')
-                cursor.execute("SELECT tbl_name FROM sqlite_master where type='table'")
+                cursor.execute(
+                    "SELECT tbl_name FROM sqlite_master where type='table'")
             else:
                 log.debug(f'showing tables matching {pattern}')
-                cursor.execute(f"SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name LIKE '%{pattern}%'")
+                cursor.execute(
+                    f"SELECT tbl_name FROM sqlite_master WHERE type='table' AND tbl_name LIKE '%{pattern}%'")
 
             print(tabulate(cursor.fetchall()))
             cursor.close()
@@ -150,7 +191,7 @@ LC_ALL                  {getenv('LC_ALL', '?')}
 Styling
 -----------
 prompt                  {context['prompt_session'].message}
-style                   {context['prompt_session'].style}
+style                   {context['style']}
 table style             {context['table_style']}
 
 Prompt Toolkit Main
@@ -190,7 +231,8 @@ class DumpCmd(MetaCmd):
         super().__init__(".dump")
 
     def fire(self, context: Dict[str, Any]) -> None:
-        maybe_file: Optional[str] = expanduser(self.sanitise(context['user_input']))
+        maybe_file: Optional[str] = expanduser(
+            self.sanitise(context['user_input']))
         if maybe_file:
             log.info(f'performing a database dump to {maybe_file}')
             n = 0
@@ -198,7 +240,7 @@ class DumpCmd(MetaCmd):
                 for line in context['con'].iterdump():
                     f.write(line + '\n')
                     n += 1
-            print(f'wrote database dump to {maybe_file} ({n} lines of SQL)')
+            print(f'Wrote database dump to {maybe_file} ({n} lines of SQL).')
         else:
             log.info('performing a database dump to STDOUT')
             for line in context['con'].iterdump():
@@ -224,7 +266,7 @@ class OpenCmd(MetaCmd):
                 log.debug(f'updating prompt_session from modified context')
                 context['prompt_session'] = custom_prompt_sess(context)
         else:
-            print("please provide file name")
+            print(f"Currently connected to {context['database']}.")
 
 
 class PrintCmd(MetaCmd):
@@ -256,7 +298,8 @@ class LogCmd(MetaCmd):
         from logging import DEBUG, WARN
         import logging
         is_verbose: bool = context['verbose']
-        maybe_file: Optional[str] = expanduser(self.sanitise(context['user_input']))
+        maybe_file: Optional[str] = expanduser(
+            self.sanitise(context['user_input']))
         log.setLevel(WARN if is_verbose else DEBUG)
 
         if (maybe_file.lower() == 'stdout') or (maybe_file == ''):
@@ -288,7 +331,8 @@ class ModeCmd(MetaCmd):
 
     def fire(self, context: Dict[str, Any]) -> None:
         new_style = self.sanitise(context['user_input'])
-        log.info(f'changing table style from {context["table_style"]} to {new_style}')
+        log.info(
+            f'changing table style from {context["table_style"]} to {new_style}')
         context['table_style'] = new_style
 
 
@@ -319,7 +363,8 @@ class ReadCmd(MetaCmd):
             # $EDITOR env variable is set so open the script with it
             if (editor is not None) or (editor == ''):
                 log.debug('editor was set, trying to edit script before running')
-                tmp_file = NamedTemporaryFile(mode='a+', encoding='utf-8', delete=False)
+                tmp_file = NamedTemporaryFile(
+                    mode='a+', encoding='utf-8', delete=False)
                 tmp_file.write(ReadCmd._docstring(file_name))
                 with open(file_name, encoding='utf-8') as sql_script:
                     tmp_file.write(sql_script.read())
@@ -348,7 +393,7 @@ class ReadCmd(MetaCmd):
             except sqlite3.OperationalError as e:
                 print(str(e))
         else:
-            print("please provide file name")
+            print("Please provide file name.")
 
 
 class OutputCmd(MetaCmd):
@@ -359,12 +404,20 @@ class OutputCmd(MetaCmd):
 
         file_name: str = expanduser(self.sanitise(context['user_input']))
 
-        if file_name == '' or file_name.lower() == 'stdout':
+        if file_name.lower() == 'stdout':
             log.info("redirecting output to STDOUT")
             sys.stdout = sys.__stdout__
 
+        if file_name == '':
+            if sys.stdout != sys.__stdout__:
+                print(
+                    f'Outputting to STDOUT.' if sys.stdout == sys.__stdout__ else f"outputting to {getattr(sys.stdout, 'name', '?')}.",
+                    file=sys.__stdout__)
+            print(
+                f'Outputting to STDOUT.' if sys.stdout == sys.__stdout__ else f"outputting to {getattr(sys.stdout, 'name', '?')}.")
+
         elif file_name:
-            log.info(f'redirecting output to {file_name}')
+            log.info(f'Redirecting output to {file_name}.')
             sys.stdout = open(file_name, encoding='utf-8', mode='a')
 
 
@@ -399,7 +452,7 @@ class BackupCmd(MetaCmd):
                     progress=(
                         lambda status, remaining, total: print(f'Copied {total - remaining} of {total} pages...')))
         else:
-            print('please provide output path')
+            print('Please provide output path.')
 
 
 meta_cmds: List[MetaCmd] = [
@@ -416,6 +469,8 @@ meta_cmds: List[MetaCmd] = [
     OpenCmd(),
     ModeCmd(),
     LogCmd(),
+    SaveCmd(),
     SchemaCmd(),
+    StyleCmd(),
     PrintCmd(),
 ]

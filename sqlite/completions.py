@@ -9,26 +9,32 @@ from typing import Dict, Generator, Iterable, List, Set
 # 3rd Party
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion, ThreadedCompleter, merge_completers
 from prompt_toolkit.document import Document
+from pygments.styles import STYLE_MAP
 
 
 class _MetaCmdCompleter(Completer):
     META: Dict[str, str] = {f'.{k}': v for k, v in {
-        'cd': ("[DIR]", 'Change directory to <dir>'),
-        'dump': ("[FILE]", 'Stringify database into SQL commands'),
+        'cd': ("[DIR]", 'Change directory to DIR or $HOME if DIR is not provided'),
+        'dump': ("[FILE]", 'Stringify database into SQL commands or STDOUT if FILE is not provided'),
         'exit': ("", 'Exit the REPL'),
-        'help': ("[PATTERN]", 'Display meta commands matching PATTERN'),
-        'mode': ("[STYLE]", 'Change table style to STYLE'),
-        'open': ("[DATABASE]", 'Close this database and open DATABASE'),
-        'output': ("[FILE]", 'Redirect output of commands to FILE'),
-        'print': ("[STRING, ...]", 'Display given <string> in the terminal'),
+        'help': ("[PATTERN]", 'Display meta commands matching PATTERN or ALL if PATTERN is not provided'),
+        'mode': ("[STYLE]", 'Change table style to STYLE or display current style if STYLE is not provided'),
+        'open': (
+            "[DATABASE]", 'Close this database and open DATABASE or show current database if DATABASE is not provided'),
+        'output': ("[FILE]", 'Redirect output of commands to FILE (or to STDOUT if FILE == "stdout"), shows current output stream if FILE is not provided'),
+        'print': ("[STRING, ...]", 'Display given STRING in the terminal'),
         'prompt': ("[STRING]", 'Change prompt to STRING'),
         'quit': ("", 'Exit the REPL'),
         'read': ("[FILE]", 'Eval SQL from FILE'),
-        'schema': ("[PATTERN]", 'Show schemas for tables in the database matching [PATTERN]'),
+        'save': ("<FILE>", 'Save in-memory database to FILE'),
+        'schema': ("[PATTERN]", 'Show schemas for tables in the database matching PATTERN'),
         'shell': ("<CMD> [ARG, ...]", 'Run an OS command CMD'),
-        'show': ("[PATTERN]", 'Display info about the REPL starting with PATTERN'),
-        'system': ("<CMD> [ARG, ...]", 'Run an OS command <cmd>'),
-        'tables': ("[PATTERN]", 'Show tables in the database matching [PATTERN]'),
+        'show': (
+            "[PATTERN]", 'Display info about the REPL starting with PATTERN or all info if PATTERN is not provided'),
+        'style': ("[STYLE]", 'Change style to STYLE or show current style if STYLE is not provided'),
+        'system': ("<CMD> [ARG, ...]", 'Run an OS command CMD with ARGS'),
+        'tables': (
+            "[PATTERN]", 'Show tables in the database matching PATTERN or show all tables if PATTERN is not provided'),
     }.items()}
 
     def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
@@ -46,6 +52,23 @@ class _MetaCmdCompleter(Completer):
                 if completion.startswith(curr_word_lower) or completion.startswith(curr_word_upper):
                     yield Completion(completion, start_position=start_position, display_meta=descr)
             return
+
+
+class _StyleCompleter(Completer):
+    STYLES: Set[str] = set(STYLE_MAP.keys())
+
+    def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
+
+        if (len(doc.text.strip()) == 0) or (not doc.text.strip().startswith('.style')): return
+
+        curr_word = doc.get_word_before_cursor(WORD=True)
+        curr_word_upper = curr_word.upper()
+        curr_word_lower = curr_word.lower()
+        start_position, _ = doc.find_boundaries_of_current_word(WORD=True)
+
+        for style in _StyleCompleter.STYLES:
+            if style.startswith(curr_word_lower) or style.startswith(curr_word_upper):
+                yield Completion(style, start_position=start_position, display_meta='style')
 
 
 class _TableStyleCompleter(Completer):
@@ -536,6 +559,7 @@ def SQLiteCompleter() -> Completer:
             _FileSystemCompleter(),
             _TableStyleCompleter(),
             _FileCompleter(),
+            _StyleCompleter(),
             _CdCompleter(),
             _SQLCompleter(),
         ]))

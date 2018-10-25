@@ -100,7 +100,7 @@ def main() -> None:
     parser.add_argument(
         '-t',
         '--table_style',
-        help='set table style to <STYLE> (hint: try "orgtbl", "pipe" or "simple")',
+        help='set table style to <STYLE>, (see https://pypi.org/project/tabulate/) (hint: try "simple", "orgtbl", "pipe", "html" or "latex")',
         metavar='STYLE',
         choices=[
             "fancy_grid",

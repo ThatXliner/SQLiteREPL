@@ -21,6 +21,7 @@ def custom_toolbar(context: Dict[str, Any]) -> HTML:
     s += entry('database', context['database'])
     s += entry('multiline', context['prompt_session'].multiline)
     s += entry('directory', context['cwd'])
+    s += entry('style', context['style'])
     s += entry('tables', context['table_style'])
 
     # NOT WORKING
