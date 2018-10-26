@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sqlite3
 # Standard Library
-import sys
-from os import getcwd
-from os.path import expanduser, isfile
 from argparse import ArgumentParser, Namespace
 from sqlite3 import Cursor
-import sqlite3
-from typing import Dict, Any
 
 # 3rd Party
 from pygments.styles import STYLE_MAP
 from tabulate import tabulate
 
+from .context import Context
 # Relative
 from .meta_cmds import meta_cmds
-from .utils import custom_prompt_sess, custom_toolbar
-from .log import log
+from .utils import set_db_con, log, set_prompt_sess, set_toolbar, set_env_vars, set_verbosity
 
 
 def main() -> None:
@@ -91,6 +87,12 @@ def main() -> None:
         default=True)
 
     parser.add_argument(
+        '--readonly',
+        help='open the database is READ-ONLY mode',
+        action='store_true',
+        default=False)
+
+    parser.add_argument(
         '--no-editor',
         dest='editor',
         help='disable opening in $EDITOR',
@@ -141,49 +143,23 @@ def main() -> None:
 
     args: Namespace = parser.parse_args()
 
-    if args.verbose:
-        import logging
+    context: Context = Context.from_namespace(args)
 
-        # initialise logging with sane configuration
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(levelname)s:%(asctime)s  %(message)s"
-        )
-
-    context: Dict[str, Any] = dict()
-
-    # copy all from parsed args into context
-    for k, v in vars(args).items():
-        context[k] = v
-
-    context['database'] = expanduser(args.database) if args.database != ':memory:' else args.database
-    context['con'] = sqlite3.connect(context['database'])
-
-    # evaluate SQL script before entering interactive mode
-    if args.eval:
-        log.info(f'reading SQL from {args.eval}')
-        if isfile(args.eval):
-            with context['con'] as c:
-                with open(args.eval, encoding='utf-8') as f:
-                    cursor: Cursor = c.cursor()
-                    cursor.executescript(f.read())
-                    print(tabulate(cursor.fetchall(), tablefmt=context['table_style']))
-                    cursor.close()
-        else:
-            raise FileNotFoundError(f'could not read SQL from {args.eval}, not a valid file')
-
-    context['prompt_session'] = custom_prompt_sess(context)
-    context['cwd'] = getcwd()
+    set_verbosity(context)
+    set_db_con(context)
+    set_prompt_sess(context)
+    set_env_vars(context)
 
     while True:
         try:
             log.debug(context)
-            context['user_input'] = context['prompt_session'].prompt(
-                bottom_toolbar=(lambda: custom_toolbar(context))).strip()
+            # refreshes it so that it displays up-to-date info
+            set_toolbar(context)
+            context.user_input = context.prompt_session.prompt().strip()
             fired = False
 
             for cmd in meta_cmds:
-                if cmd.test(context['user_input']):
+                if cmd.test(context.user_input):
                     cmd.fire(context)
                     fired = True
                     break
@@ -191,12 +167,12 @@ def main() -> None:
             if fired:
                 continue
 
-            elif context['user_input']:
+            elif context.user_input:
                 try:
-                    with context['con'] as c:
+                    with context.con as c:
                         cursor: Cursor = c.cursor()
-                        cursor.execute(context['user_input'])
-                        print(tabulate(cursor.fetchall(), tablefmt=context['table_style']))
+                        cursor.execute(context.user_input)
+                        print(tabulate(cursor.fetchall(), tablefmt=context.table_style))
                         cursor.close()
 
                 except (sqlite3.Error, sqlite3.IntegrityError) as e:

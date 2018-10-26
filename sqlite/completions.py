@@ -13,7 +13,7 @@ from pygments.styles import STYLE_MAP
 
 
 class _MetaCmdCompleter(Completer):
-    META: Dict[str, str] = {f'.{k}': v for k, v in {
+    META: Dict[str, str] = {f'.{k}': (v[0], v[1] + '.') for k, v in {
         'cd': ("[DIR]", 'Change directory to DIR or $HOME if DIR is not provided'),
         'dump': ("[FILE]", 'Stringify database into SQL commands or STDOUT if FILE is not provided'),
         'exit': ("", 'Exit the REPL'),
@@ -111,7 +111,11 @@ class _TableStyleCompleter(Completer):
 
 
 class _ExecutablesCompleter(Completer):
-    CACHE: Set[str] = set(reduce(concat, [listdir(d) for d in filter(isdir, filter(bool, getenv("PATH").split(':')))]))
+    CACHE: Set[str] = set(
+        filter(lambda x: not ('.' in x), reduce(concat, [listdir(d) for d in filter(isdir, filter(bool,
+                                                                                                  getenv(
+                                                                                                      "PATH").split(
+                                                                                                      ':')))])))
 
     def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
 
@@ -156,6 +160,7 @@ class _CdCompleter(Completer):
         for node in iglob(expanduser(word_) + '*'):
             if node.startswith(word) and isdir(node):
                 yield Completion(node, start_position=pos, display_meta='dir')
+        yield Completion('..', start_position=pos, display_meta='dir (parent dir)')
 
 
 class _FileSystemCompleter(Completer):
