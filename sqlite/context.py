@@ -41,7 +41,7 @@ class Context(dict):
         return context
 
 
-class SqliteCtxt(dict):
+class SqliteCtxt(Context):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, *kwargs)
         self.BROWSER: str = None
