@@ -40,19 +40,23 @@ class _MetaCmdCompleter(Completer):
 
     def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
 
-        if len(doc.current_line.strip()) == 0: return
+        if len(doc.current_line.strip()) == 0 or (not doc.text.strip().startswith('.')):
+            return
 
         curr_word = doc.get_word_before_cursor(WORD=True)
         curr_word_upper = curr_word.upper()
         curr_word_lower = curr_word.lower()
         start_position, _ = doc.find_boundaries_of_current_word(WORD=True)
 
-        if curr_word.startswith('.'):
-            for completion, pair in _MetaCmdCompleter.META.items():
-                syntax, descr = pair
-                if completion.startswith(curr_word_lower) or completion.startswith(curr_word_upper):
-                    yield Completion(completion, start_position=start_position, display_meta=descr)
+        # only complete on the *first* word starting with a dot ('.')
+        if curr_word.strip() == '' or (len(doc.text.strip().split(' ')) > 1 and curr_word.strip().startswith('.')):
             return
+
+        for completion, pair in _MetaCmdCompleter.META.items():
+            syntax, descr = pair
+            if completion.startswith(curr_word_lower) or completion.startswith(curr_word_upper):
+                yield Completion(completion, start_position=start_position, display_meta=descr)
+        return
 
 
 class _StyleCompleter(Completer):
@@ -529,7 +533,7 @@ class _SQLCompleter(Completer):
 
     def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
 
-        if len(doc.current_line.strip()) == 0:
+        if len(doc.current_line.strip()) == 0 or doc.text.strip().startswith('.'):
             return
 
         word = doc.get_word_before_cursor(WORD=True)

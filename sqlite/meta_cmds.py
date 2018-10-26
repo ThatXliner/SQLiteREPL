@@ -308,17 +308,25 @@ class LogCmd(MetaCmd):
             self.sanitise(context.user_input))
         log.setLevel(WARN if is_verbose else DEBUG)
 
-        if (maybe_file.lower() == 'stdout') or (maybe_file == ''):
-            log.info(f'redirecting logging to STDOUT')
+        if maybe_file.lower() == 'stdout':
+            print(f'Redirecting logging to STDOUT.')
             logging.basicConfig(stream=sys.__stdout__)
 
+        elif maybe_file.lower() == 'off':
+            context.verbose = not is_verbose
+            logging.basicConfig(level=WARN)
+            print(f'Logging is OFF.')
+
         elif maybe_file:
-            log.info(f'redirecting logging to {maybe_file}')
+            print(f'Redirecting logging to {maybe_file}.')
             logging.basicConfig(filename=maybe_file)
 
-        context.verbose = not is_verbose
-
-        log.info(f'verbose logging {"on" if context.verbose else "off"}')
+        elif is_verbose:
+            print(
+                f'Currently logging to {"STDOUT" if sys.stdout == sys.__stdout__ else getattr(sys.stdout, "name", "?")}.')
+        else:
+            print('Currently not logging.')
+            return
 
 
 class PromptCmd(MetaCmd):
