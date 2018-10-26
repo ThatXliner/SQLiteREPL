@@ -19,6 +19,8 @@ class _MetaCmdCompleter(Completer):
         'exit': ("", 'Exit the REPL'),
         'help': ("[PATTERN]", 'Display meta commands matching PATTERN or ALL if PATTERN is not provided'),
         'mode': ("[STYLE]", 'Change table style to STYLE or display current style if STYLE is not provided'),
+        'log': ("[FILE|off]",
+                'Redirect (implicitly enable) logging into FILE or disable logging with "off", shows current setting with no arg'),
         'open': (
             "[DATABASE]", 'Close this database and open DATABASE or show current database if DATABASE is not provided'),
         'output': ("[FILE]", 'Redirect output of commands to FILE (or to STDOUT if FILE == "stdout"), shows current '
@@ -140,6 +142,7 @@ class _FileCompleter(Completer):
                 ((not (doc.text.strip().startswith('.dump'))) and
                  (not doc.text.strip().startswith('.read')) and
                  (not doc.text.strip().startswith('.open')) and
+                 (not doc.text.strip().startswith('.log')) and
                  (not doc.text.strip().startswith('.output'))):
             return
 

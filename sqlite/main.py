@@ -10,7 +10,7 @@ from sqlite3 import Cursor
 from pygments.styles import STYLE_MAP
 from tabulate import tabulate
 
-from .context import Context
+from .context import Context, SqliteCtxt
 # Relative
 from .meta_cmds import meta_cmds
 from .utils import set_db_con, log, set_prompt_sess, set_toolbar, set_env_vars, set_verbosity
@@ -143,7 +143,7 @@ def main() -> None:
 
     args: Namespace = parser.parse_args()
 
-    context: Context = Context.from_namespace(args)
+    context: SqliteCtxt = Context.from_namespace(args)
 
     set_verbosity(context)
     set_db_con(context)

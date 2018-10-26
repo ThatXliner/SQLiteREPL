@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional
 from tabulate import tabulate
 
 # Relative Imports
+from .context import SqliteCtxt
 from .completions import _MetaCmdCompleter
 from .utils import log, set_prompt_sess
 
@@ -36,7 +37,7 @@ class MetaCmd:
                 return True
         return False
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         """To be overridden by implementors.
         """
         pass
@@ -63,7 +64,7 @@ class ExitCmd(MetaCmd):
     def __init__(self):
         super().__init__(".exit", ".quit")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         log.debug('quitting')
         exit(0)
 
@@ -75,7 +76,7 @@ class HelpCmd(MetaCmd):
     def __init__(self):
         super().__init__(".help")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         pattern: str = self.sanitise(context.user_input)
         if not pattern:
             log.debug('displaying all help')
@@ -91,7 +92,7 @@ class SchemaCmd(MetaCmd):
     def __init__(self):
         super().__init__('.schema')
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         pattern: str = self.sanitise(context.user_input)
         with context.con as c:
             cursor: Cursor = c.cursor()
@@ -112,7 +113,7 @@ class StyleCmd(MetaCmd):
     def __init__(self):
         super().__init__(".style")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         new_style: str = self.sanitise(context.user_input)
         if not new_style:
             print(f'Current style is {context.style}.')
@@ -126,7 +127,7 @@ class SaveCmd(MetaCmd):
     def __init__(self):
         super().__init__(".save")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         dest: str = self.sanitise(context.user_input)
         if not dest:
             print('Missing destination file name.')
@@ -149,7 +150,7 @@ class TablesCmd(MetaCmd):
     def __init__(self):
         super().__init__(".tables")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         pattern: str = self.sanitise(context.user_input)
         with context.con as c:
             cursor: Cursor = c.cursor()
@@ -171,7 +172,7 @@ class ShowCmd(MetaCmd):
         super().__init__(".show")
 
     @staticmethod
-    def _docstring(context: Dict[str, Any]) -> str:
+    def _docstring(context: SqliteCtxt) -> str:
         return f'''
 SQLite
 --------
@@ -181,11 +182,15 @@ verbose                 {context.verbose}
 
 Environment
 -----------
-CWD                     {context.cwd}
+BROWSER                 {context.BROWSER}
+CDPATH                  {context.CDPATH}
+CWD                     {context.PWD}
 EDITOR                  {context.EDITOR}
 HOME                    {context.HOME}
-USER                    {context.USER}
 LC_ALL                  {context.LC_ALL}
+PAGER                   {context.PAGER}
+PATH                    {context.PATH}
+USER                    {context.USER}
 
 Styling
 -----------
@@ -215,7 +220,7 @@ open in editor          {context.prompt_session.enable_open_in_editor}
 
     '''.strip()
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         pattern: str = self.sanitise(context.user_input)
         if not pattern:
             log.debug('showing info')
@@ -231,7 +236,7 @@ class DumpCmd(MetaCmd):
     def __init__(self):
         super().__init__(".dump")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         maybe_file: Optional[str] = expanduser(
             self.sanitise(context.user_input))
         if maybe_file:
@@ -252,7 +257,7 @@ class OpenCmd(MetaCmd):
     def __init__(self):
         super().__init__(".open")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         file_name: str = expanduser(self.sanitise(context.user_input))
         if file_name:
             log.info(f'new database path is {file_name}')
@@ -274,7 +279,7 @@ class PrintCmd(MetaCmd):
     def __init__(self):
         super().__init__(".print")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         s: str = self.sanitise(context.user_input)
         if s:
             print(s)
@@ -284,7 +289,7 @@ class ShellCmd(MetaCmd):
     def __init__(self):
         super().__init__(".shell", ".system")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         try:
             args: List[str] = [expanduser(arg) if arg.startswith('~') else arg for arg in
                                split(self.sanitise(context.user_input))]
@@ -300,7 +305,7 @@ class LogCmd(MetaCmd):
     def __init__(self):
         super().__init__(".log")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         from logging import DEBUG, WARN
         import logging
         is_verbose: bool = context.verbose
@@ -333,7 +338,7 @@ class PromptCmd(MetaCmd):
     def __init__(self):
         super().__init__(".prompt")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         new_prompt = self.sanitise(context.user_input) + " "
         log.info(f'changing prompt from {context.prompt} to {new_prompt}')
         context.prompt_session.message = new_prompt
@@ -343,7 +348,7 @@ class ModeCmd(MetaCmd):
     def __init__(self):
         super().__init__(".mode")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         new_style = self.sanitise(context.user_input)
         log.info(
             f'changing table style from {context.table_style} to {new_style}')
@@ -366,7 +371,7 @@ class ReadCmd(MetaCmd):
 
 '''.lstrip()
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         file_name: str = expanduser(self.sanitise(context.user_input))
 
         if not file_name:
@@ -419,7 +424,7 @@ class OutputCmd(MetaCmd):
     def __init__(self):
         super().__init__(".output")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
 
         file_name: str = expanduser(self.sanitise(context.user_input))
 
@@ -444,14 +449,14 @@ class CdCmd(MetaCmd):
     def __init__(self):
         super().__init__(".cd")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         from os import chdir
         path: str = expanduser(self.sanitise(context.user_input))
         try:
             chdir(path if path else expanduser('~/'))
             # update cwd (necessary) to keep data in context valid
-            context.cwd = getcwd()
-            log.info(f'changed dir to {context.cwd}')
+            context.PWD = getcwd()
+            log.info(f'changed dir to {context.PWD}')
             return
         except FileNotFoundError:
             pass
@@ -461,7 +466,7 @@ class BackupCmd(MetaCmd):
     def __init__(self):
         super().__init__(".backup")
 
-    def fire(self, context: Dict[str, Any]) -> None:
+    def fire(self, context: SqliteCtxt) -> None:
         target_file = self.sanitise(context.user_input)
         if target_file:
             log.info(f'backing up the database to {target_file}')

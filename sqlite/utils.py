@@ -18,14 +18,14 @@ from pygments.lexers.sql import SqlLexer
 from pygments.styles import get_style_by_name
 from tabulate import tabulate
 
-from .context import Context
+from .context import Context, SqliteCtxt
 from .completions import SQLiteCompleter
 
 log: Logger = getLogger()
 
 
-def set_toolbar(context: Context) -> None:
-    def custom_toolbar(context: Dict[str, Any]) -> HTML:
+def set_toolbar(context: SqliteCtxt) -> None:
+    def custom_toolbar(context: SqliteCtxt) -> HTML:
         s = "SQLite3 REPL"
 
         def entry(k: str, v: str) -> str:
@@ -33,7 +33,7 @@ def set_toolbar(context: Context) -> None:
 
         s += entry('database', context.database)
         s += entry('multiline', context.prompt_session.multiline)
-        s += entry('directory', context.cwd)
+        s += entry('directory', context.PWD)
         s += entry('style', context.style)
         s += entry('tables', context.table_style)
 
@@ -45,7 +45,7 @@ def set_toolbar(context: Context) -> None:
     context.prompt_session.bottom_toolbar = lambda: custom_toolbar(context)
 
 
-def set_db_con(context: Context) -> None:
+def set_db_con(context: SqliteCtxt) -> None:
     if context.readonly:
         if isfile(context.database):
             log.info(f"opening {context.database} in READ-ONLY mode")
@@ -64,7 +64,7 @@ def set_db_con(context: Context) -> None:
         context.con = sqlite3.connect(context.database)
 
 
-def set_prompt_sess(context: Context) -> None:
+def set_prompt_sess(context: SqliteCtxt) -> None:
     context.prompt_session = PromptSession(
         message=context.prompt,
         history=ThreadedHistory(FileHistory(expanduser(context.history))),
@@ -81,12 +81,12 @@ def set_prompt_sess(context: Context) -> None:
     # bottom_toolbar=((lambda: custom_toolbar(context)) if context.infobar else None),
 
 
-def set_env_vars(context: Context) -> None:
+def set_env_vars(context: SqliteCtxt) -> None:
     for env_var in ['EDITOR', 'PWD', 'PAGER', 'CDPATH', 'PATH', 'BROWSER', 'HOME', 'USER', 'LANG', 'LC_ALL']:
         context[env_var] = getenv(env_var, None)
 
 
-def set_verbosity(context: Context) -> None:
+def set_verbosity(context: SqliteCtxt) -> None:
     if context.verbose:
         import logging
 
@@ -96,7 +96,7 @@ def set_verbosity(context: Context) -> None:
             format="%(levelname)s:%(asctime)s  %(message)s")
 
 
-def eval_sql_script(context: Context) -> None:
+def eval_sql_script(context: SqliteCtxt) -> None:
     # evaluate SQL script before entering interactive mode
     if context.eval:
         log.info(f'reading SQL from {context.eval}')

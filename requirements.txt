@@ -1,12 +1,4 @@
-<<<<<<< HEAD
 prompt_toolkit>=2
 tabulate==0.8.2
 pygments>=2.2.0
-||||||| merged common ancestors
-prompt_toolkit
-=======
-prompt_toolkit
-pandas
-pygments
 
->>>>>>> 6fcbbbaf3a2dff4a5b44d388663dfdac2d49a5f6

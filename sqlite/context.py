@@ -1,7 +1,10 @@
 from argparse import Namespace
 from functools import reduce
 from os.path import expanduser
+from sqlite3 import Connection
 from typing import Any, Optional, Dict
+
+from prompt_toolkit import PromptSession
 
 
 class Context(dict):
@@ -36,3 +39,34 @@ class Context(dict):
         for k, v in vars(namespace).items():
             context[k] = expanduser(v) if isinstance(v, str) and '~' in v else v
         return context
+
+
+class SqliteCtxt(dict):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, *kwargs)
+        self.BROWSER: str = None
+        self.CDPATH: str = None
+        self.EDITOR: str = None
+        self.HOME: str = None
+        self.LANG: str = None
+        self.LC_ALL: str = None
+        self.PAGER: str = None
+        self.PATH: str = None
+        self.PWD: str = None
+        self.complete_while_typing: bool = None
+        self.con: Connection = None
+        self.database: str = None
+        self.editor: bool = None
+        self.eval: str = None
+        self.history: str = None
+        self.history_search: bool = None
+        self.infobar: bool = None
+        self.memory: bool = None
+        self.multiline: bool = None
+        self.prompt: str = None
+        self.prompt_session: PromptSession = None
+        self.readonly: bool = None
+        self.style: Any = None
+        self.table_style: str = None
+        self.user_input: str = None
+        self.verbose: bool = None
