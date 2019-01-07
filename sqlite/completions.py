@@ -117,11 +117,20 @@ class _TableStyleCompleter(Completer):
 
 
 class _ExecutablesCompleter(Completer):
-    CACHE: Set[str] = set(
-        filter(lambda x: not ('.' in x), reduce(concat, [listdir(d) for d in filter(isdir, filter(bool,
-                                                                                                  getenv(
-                                                                                                      "PATH").split(
-                                                                                                      ':')))])))
+    from sys import platform
+    CACHE: Set[str] = None
+    if platform.startswith('win'):
+        CACHE = set(
+            filter(lambda x: not ('.' in x), reduce(concat, [listdir(d) for d in filter(isdir, filter(bool,
+                                                                                                      getenv(
+                                                                                                          "PATH").split(
+                                                                                                          ';')))])))
+    else:
+        CACHE = set(
+            filter(lambda x: not ('.' in x), reduce(concat, [listdir(d) for d in filter(isdir, filter(bool,
+                                                                                                      getenv(
+                                                                                                          "PATH").split(
+                                                                                                          ':')))])))
 
     def get_completions(self, doc: Document, event: CompleteEvent) -> Generator[Completion, None, None]:
 

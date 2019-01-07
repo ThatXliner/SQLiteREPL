@@ -1,10 +1,7 @@
-__pycache__/
-<<<<<<< HEAD
-sqlite.egg-info/
+.idea/
+.mypy_cache/
 Pipfile
 Pipfile.lock
-||||||| merged common ancestors
-=======
-.mypy_cache/
-.idea/
->>>>>>> 6fcbbbaf3a2dff4a5b44d388663dfdac2d49a5f6
+__pycache__/
+sqlite.egg-info/
+venv/
