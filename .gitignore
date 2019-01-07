@@ -1,7 +1,14 @@
 .idea/
+*.egg-*
 .mypy_cache/
 Pipfile
 Pipfile.lock
 __pycache__/
 sqlite.egg-info/
+dist/
+build/
 venv/
+*~
+~*
+*#
+#*
