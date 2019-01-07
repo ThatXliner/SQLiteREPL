@@ -94,6 +94,10 @@ loaded in memory.
 - check out tabulate for all the table types
 - use aliases for "semi-permanent" config e.g.: `alias sqlite='sqlite --multiline'`
 
+## Compatibility
+
+It should work on Win10 and Linux.
+
 ## Installation
 
 ```sh
