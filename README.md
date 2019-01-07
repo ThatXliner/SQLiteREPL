@@ -2,21 +2,21 @@
 
 ## Good completion
 
-![](screens/6.png)
+![](https://raw.githubusercontent.com/nl253/SQLiteREPL/master/screens/6.png)
 
-![](screens/1.png)
+![](https://raw.githubusercontent.com/nl253/SQLiteREPL/master/screens/1.png)
 
-![](screens/2.png)
+![](https://raw.githubusercontent.com/nl253/SQLiteREPL/master/screens/2.png)
 
-![](screens/3.png)
+![](https://raw.githubusercontent.com/nl253/SQLiteREPL/master/screens/3.png)
 
-![](screens/7.png)
+![](https://raw.githubusercontent.com/nl253/SQLiteREPL/master/screens/7.png)
 
-![](screens/8.png)
+![](https://raw.githubusercontent.com/nl253/SQLiteREPL/master/screens/8.png)
 
-![](screens/9.png)
+![](https://raw.githubusercontent.com/nl253/SQLiteREPL/master/screens/9.png)
 
-![](screens/10.png)
+![](https://raw.githubusercontent.com/nl253/SQLiteREPL/master/screens/10.png)
 
 ```
 usage: SQLiteREPL [-h] [-H [PATH]] [-e [FILE]] [-m] [-v] [-M]
@@ -92,7 +92,7 @@ loaded in memory.
 
 - check out pygments for all the possible styles
 - check out tabulate for all the table types
-- use aliases for "semi-permanent" config e.g.: `alias sqlite='sqlite --multiline'`
+- use aliases for "semi-permanent" config e.g.: `alias sqlite='sqliterepl --multiline'`
 
 ## Compatibility
 
@@ -101,7 +101,16 @@ It should work on Win10 and Linux.
 ## Installation
 
 ```sh
-$ pip install --user 'git+https://github.com/nl253/SQLiteREPL@master'
+$ pip install --user sqliterepl
+```
+
+**NOTE** <br>
+make sure your `~/.local/bin` (GNU/Linux) or `~\AppData\Roaming\Python\Python<VERSION>\Scripts` (Win10) dir is in `$PATH`.
+
+## Running
+
+```sh
+$ sqliterepl
 ```
 
 ## Limitations

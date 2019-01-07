@@ -1,0 +1,17 @@
+LICENSE
+MANIFEST.in
+README.md
+requirements.txt
+setup.py
+sqliterepl/__init__.py
+sqliterepl/completions.py
+sqliterepl/context.py
+sqliterepl/main.py
+sqliterepl/meta_cmds.py
+sqliterepl/utils.py
+sqliterepl.egg-info/PKG-INFO
+sqliterepl.egg-info/SOURCES.txt
+sqliterepl.egg-info/dependency_links.txt
+sqliterepl.egg-info/entry_points.txt
+sqliterepl.egg-info/requires.txt
+sqliterepl.egg-info/top_level.txt
